@@ -192,10 +192,10 @@ final class CasePathsTests: XCTestCase {
         .extract(from: .bar(.baz))
     )
   }
-  
+
   func testNestedUninhabitedTypes() {
     enum Uninhabited {}
-    
+
     enum Foo {
       case foo
       case bar(Uninhabited)
@@ -212,7 +212,7 @@ final class CasePathsTests: XCTestCase {
         .extract(from: Foo.foo)
     )
   }
-  
+
   func testEnumsWithoutAssociatedValues() {
     enum Foo: Equatable {
       case bar
@@ -363,6 +363,26 @@ final class CasePathsTests: XCTestCase {
     XCTAssertNotNil(
       (/EnumWithLabeledCase.labeled(label:otherLabel:)).extract(
         from: .labeled(label: 2, otherLabel: 2)))
+  }
+
+  func testPatternMatching() {
+    let results = [
+      Result<Int, NSError>.success(1),
+      .success(2),
+      .failure(NSError(domain: "co.pointfree", code: -1)),
+      .success(3),
+    ]
+    XCTAssertEqual(
+      Array(results.lazy.prefix(while: { /Result.success ~= $0 }).compactMap(/Result.success)),
+      [1, 2]
+    )
+
+    switch results[0] {
+    case /Result.success:
+      break
+    default:
+      XCTFail()
+    }
   }
 
   //  func testStructs() {
